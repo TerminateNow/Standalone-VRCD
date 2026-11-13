@@ -58,6 +58,14 @@ jobs:
       - name: Typecheck (android)
         run: npm run typecheck:android
 
+      - name: Check API key secret
+        env:
+          VRSRC_API_KEY: ${{ secrets.VRSRC_API_KEY }}
+        run: |
+          if [ -z "$VRSRC_API_KEY" ]; then
+            echo "::warning title=VRSRC_API_KEY missing::The VRSRC_API_KEY secret is not set. This APK cannot sync the library from the public server (every request returns 403)."
+          fi
+
       - name: Build web bundle and sync into Android project
         env:
           VRSRC_API_KEY: ${{ secrets.VRSRC_API_KEY }}

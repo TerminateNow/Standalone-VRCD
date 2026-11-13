@@ -188,6 +188,14 @@ function progress(stage: 'download' | 'extract', value: number): void {
 async function syncGameData(): Promise<GameInfo[]> {
   const server = getServer()
   if (!server) throw new Error('No server configured. Add one in Settings → Server config.')
+  if (!serverHeaders()['X-API-Key']) {
+    // Same check as the desktop GameService: the public server rejects every
+    // request without the key, so say so instead of failing with a bare 403.
+    throw new Error(
+      'This APK was built without an API key (VRSRC_API_KEY), so the server will refuse the library ' +
+        'download (403). Add the VRSRC_API_KEY secret to the repository and rebuild the APK.'
+    )
+  }
 
   const archive = joinPath(dataPath, 'meta.7z')
   const dlTask = newTaskId('meta-dl')
@@ -204,7 +212,7 @@ async function syncGameData(): Promise<GameInfo[]> {
     })
     if (res.status === 403) {
       throw new Error(
-        'The server refused the request (403). This build may be missing its API key, or your clock is wrong.'
+        'The server refused the request (403). The API key in this build was rejected, or the phone clock is wrong.'
       )
     }
     if (res.status >= 400) throw new Error(`Server returned HTTP ${res.status} for meta.7z`)
