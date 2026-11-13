@@ -4,6 +4,7 @@ import { ExtendedDeviceInfo, hasBookmarkData, isWiFiBookmark } from '@shared/typ
 import { AdbShellDialog } from './AdbShellDialog'
 import { shouldShowBreach } from '../hooks/useExtrasSettings'
 import '../assets/device-list-breach.css'
+import { isAndroidApp } from '../utils/fileUrl'
 
 interface DeviceListProps {
   onSkip?: () => void
@@ -1197,9 +1198,22 @@ const DeviceList: React.FC<DeviceListProps> = ({ onSkip, onConnected }) => {
                       lineHeight: 1.7
                     }}
                   >
-                    Connect device via USB or save a WiFi target above.
-                    <br />
-                    Ensure ADB debugging is enabled on the headset.
+                    {isAndroidApp() ? (
+                      <>
+                        Save the headset&apos;s Wi-Fi IP above (port 5555), then BREACH.
+                        <br />
+                        ADB over Wi-Fi must be on: run &quot;adb tcpip 5555&quot; once from a PC
+                        <br />
+                        (or use SideQuest / Meta Quest Developer Hub). Lasts until the headset
+                        reboots.
+                      </>
+                    ) : (
+                      <>
+                        Connect device via USB or save a WiFi target above.
+                        <br />
+                        Ensure ADB debugging is enabled on the headset.
+                      </>
+                    )}
                   </div>
                 </div>
               )}

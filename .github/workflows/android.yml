@@ -1,0 +1,104 @@
+name: Android APK
+
+# Builds the Capacitor Android app (src/android + android/) into an APK.
+# The APK is attached to every run as an artifact; a manual run can also
+# upload it to an existing GitHub release.
+
+on:
+  push:
+    paths:
+      - 'android/**'
+      - 'src/**'
+      - 'resources/**'
+      - 'capacitor.config.ts'
+      - 'vite.android.config.ts'
+      - 'tsconfig.android.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/android.yml'
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Optional: existing release tag (e.g. v1.9.0) to upload the APK to'
+        required: false
+        type: string
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    name: Build APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Typecheck (android)
+        run: npm run typecheck:android
+
+      - name: Build web bundle and sync into Android project
+        env:
+          VRSRC_API_KEY: ${{ secrets.VRSRC_API_KEY }}
+        run: npm run android:sync
+
+      - name: Decode signing keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        if: env.KEYSTORE_B64 != ''
+        run: |
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Assemble release APK
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease
+
+      - name: Rename APK
+        id: apk
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          OUT="VR-CyberDeck-${VERSION}-android.apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "$OUT"
+          echo "file=$OUT" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vr-cyberdeck-android-apk
+          path: ${{ steps.apk.outputs.file }}
+          if-no-files-found: error
+
+      - name: Upload to release
+        if: github.event_name == 'workflow_dispatch' && inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.release_tag }}
+        run: gh release upload "$TAG" "${{ steps.apk.outputs.file }}" --repo "$GITHUB_REPOSITORY" --clobber

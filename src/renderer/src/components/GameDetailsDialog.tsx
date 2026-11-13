@@ -36,6 +36,7 @@ import GameCoverLightbox from './GameCoverLightbox'
 import GameDescriptionPanel from './GameDescriptionPanel'
 import { buildTrailerReportUrl } from '@shared/trailerReport'
 import { gameDescriptionKey, toGameDescriptionRequest } from '@renderer/utils/gameDescription'
+import { fileUrl } from '../utils/fileUrl'
 
 const NEON = 'var(--vrcd-neon)'
 const PURPLE = 'var(--vrcd-purple)'
@@ -552,7 +553,7 @@ const GameDetailsDialog: React.FC<GameDetailsDialogProps> = ({
           >
             {/* Cover image */}
             <GameCoverLightbox
-              src={game.thumbnailPath ? `file://${game.thumbnailPath}` : placeholderImage}
+              src={game.thumbnailPath ? fileUrl(game.thumbnailPath) : placeholderImage}
               alt={game.name}
               isPlaceholder={!game.thumbnailPath}
               loading={loadingDescription}

@@ -178,6 +178,43 @@ npm install --legacy-peer-deps
 | Windows  | `npx electron-vite build && npx electron-builder --win --x64`   |
 | macOS    | `npx electron-vite build && npx electron-builder --mac --x64`   |
 | Linux    | `npx electron-vite build && npx electron-builder --linux --x64` |
+| Android  | `npm run android:apk` (needs JDK 21 + Android SDK; see below)   |
+
+---
+
+## `// ANDROID`
+
+An Android build runs on your **phone** and sideloads to a Quest over **wireless ADB**. It reuses the
+desktop React UI unchanged inside a Capacitor WebView. The Electron main process is replaced by an
+in-page backend (`src/android/backend`) plus a small Kotlin plugin (`android/app/src/main/java/...`)
+that provides wireless ADB through [dadb](https://github.com/mobile-dev-inc/dadb), HTTP transfers,
+and 7z extraction through Apache Commons Compress. The phone needs no rclone, 7-Zip or adb binaries.
+
+**Getting the APK:** the `Android APK` GitHub Actions workflow builds it on every push. Download
+`vr-cyberdeck-android-apk` from the run's artifacts. To build it locally, run `npm run android:apk`;
+the output is `android/app/build/outputs/apk/release/app-release.apk`.
+
+**Connecting to the headset:**
+
+1. Enable developer mode on the Quest.
+2. Turn on ADB over Wi-Fi once: run `adb tcpip 5555` from a PC with the headset plugged in, or use
+   SideQuest or Meta Quest Developer Hub. This lasts until the headset reboots.
+3. In the app, save the headset's Wi-Fi IP with port `5555` and hit **BREACH**.
+4. Put the headset on and accept the _Allow USB debugging_ prompt for the phone's key.
+
+**What works:** library sync from a JSON server config (`baseUri` + `password`), browsing, queued
+downloads with pause, resume and retry, extraction, and install. Install covers APK, OBB and
+`install.txt` scripts. You also get uninstall, the ADB shell and its shortcuts, installing an APK
+picked from the phone, and Wi-Fi bookmarks.
+
+**Not yet on Android:** rclone mirror configs, uploads, save backups, trailers, USB-OTG connection,
+Android 11+ pairing-code wireless debugging, folder pickers, and in-app updates.
+
+Release signing is optional. Set `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`,
+`ANDROID_KEY_ALIAS` and `ANDROID_KEY_PASSWORD` as repo secrets. Without them the APK is signed with
+the debug key, which still installs fine. Set `VRSRC_API_KEY` too, exactly as for desktop builds.
+
+To preview the Android UI in a desktop browser, run `npm run android:dev`. It uses a mock headset.
 
 ---
 
