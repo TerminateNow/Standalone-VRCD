@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">VR CyberDeck</string>
+    <string name="title_activity_main">VR CyberDeck</string>
+    <string name="package_name">com.vrcyberdeck.app</string>
+    <string name="custom_url_scheme">com.vrcyberdeck.app</string>
+</resources>

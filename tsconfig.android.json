@@ -1,0 +1,23 @@
+{
+  "extends": "@electron-toolkit/tsconfig/tsconfig.web.json",
+  "include": [
+    "src/android/**/*",
+    "src/renderer/src/env.d.ts",
+    "src/renderer/src/electron-api.d.ts",
+    "src/shared/**/*"
+  ],
+  "exclude": ["src/shared/**/*.test.ts"],
+  "compilerOptions": {
+    "strict": true,
+    "composite": false,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "resolveJsonModule": true,
+    "types": ["vite/client", "node"],
+    "baseUrl": ".",
+    "paths": {
+      "@renderer/*": ["src/renderer/src/*"],
+      "@shared/*": ["src/shared/*"]
+    }
+  }
+}

@@ -11,6 +11,7 @@
     "lint": "eslint --cache .",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
+    "typecheck:android": "tsc --noEmit -p tsconfig.android.json",
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -31,6 +32,10 @@
     "build:linux:arm64": "electron-vite build && electron-builder --linux --arm64",
     "build:all": "electron-vite build && electron-builder --win --mac --linux",
     "build:all:x64": "electron-vite build && electron-builder --win --mac --linux --x64",
+    "android:web": "vite build -c vite.android.config.ts",
+    "android:dev": "vite -c vite.android.config.ts",
+    "android:sync": "npm run android:web && cap sync android",
+    "android:apk": "npm run android:sync && cd android && ./gradlew assembleRelease",
     "publish": "electron-builder --publish always",
     "tag-version": "VERSION=$(node -p \"require('./package.json').version\") && TAG_NAME=\"v$VERSION\" && (git rev-parse $TAG_NAME >/dev/null 2>&1 || git tag $TAG_NAME) && echo \"Tag $TAG_NAME created or already exists.\""
   },
@@ -48,6 +53,9 @@
     "pingman": "^2.0.0"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/cli": "^8.6.2",
+    "@capacitor/core": "^8.6.2",
     "@electron-toolkit/eslint-config-prettier": "^3.0.0",
     "@electron-toolkit/eslint-config-ts": "^3.1.0",
     "@electron-toolkit/tsconfig": "^1.0.1",

@@ -372,7 +372,12 @@ export const GamesProvider: React.FC<GamesProviderProps> = ({ children }) => {
             'Check Other Settings → // RESET APP DATA if the issue persists after a reinstall.'
         )
       } else {
-        setError('Failed to refresh games')
+        // Surface the underlying reason (e.g. a 403 / missing API key) instead
+        // of a bare "failed", stripping Electron's IPC wrapper prefix.
+        const reason = msg
+          .replace(/^Error invoking remote method '[^']+':\s*(Error:\s*)?/, '')
+          .trim()
+        setError(reason ? `Failed to refresh games: ${reason}` : 'Failed to refresh games')
       }
     } finally {
       setIsLoading(false)

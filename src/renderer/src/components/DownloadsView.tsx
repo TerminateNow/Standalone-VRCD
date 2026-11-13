@@ -40,6 +40,7 @@ import {
 } from '../hooks/useExtrasSettings'
 import ErrorDetailDialog, { ErrorPhase } from './ErrorDetailDialog'
 import UninstallWarningDialog from './UninstallWarningDialog'
+import { fileUrl } from '../utils/fileUrl'
 
 const useStyles = makeStyles({
   root: {
@@ -354,7 +355,7 @@ const DownloadsView: React.FC<DownloadsViewProps> = ({ onClose }) => {
             >
               {/* Thumbnail */}
               <Image
-                src={item.thumbnailPath ? `file://${item.thumbnailPath}` : placeholderImage}
+                src={item.thumbnailPath ? fileUrl(item.thumbnailPath) : placeholderImage}
                 alt={`${item.gameName} thumbnail`}
                 className={styles.thumbnail}
                 shape="rounded"
